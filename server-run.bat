@@ -1,75 +1,75 @@
 @echo off
 chcp 65001 >nul
-title 迷宫艺术装置服务器
+title Labyrinth Art Installation Server
 
 echo.
 echo ============================================
-echo   🎨 无限递归生成迷宫 - 艺术装置
+echo   🎨 Infinite Recursive Maze - Art Installation
 echo ============================================
 echo.
 
-:: 检查 Node.js 是否安装
-echo 🔍 检查 Node.js 环境...
+:: Check if Node.js is installed
+echo 🔍 Checking Node.js environment...
 node --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ 未检测到 Node.js！
+    echo ❌ Node.js not detected!
     echo.
-    echo 请先安装 Node.js：
-    echo 1. 访问 https://nodejs.org
-    echo 2. 下载并安装 LTS 版本
-    echo 3. 重新运行此脚本
+    echo Please install Node.js first:
+    echo 1. Visit https://nodejs.org
+    echo 2. Download and install LTS version
+    echo 3. Run this script again
     echo.
     pause
     exit /b 1
 )
 
-:: 显示 Node.js 版本
+:: Display Node.js version
 for /f "tokens=*" %%i in ('node --version') do set NODE_VERSION=%%i
-echo ✅ Node.js 版本: %NODE_VERSION%
+echo ✅ Node.js version: %NODE_VERSION%
 
-:: 检查必要文件
-echo 🔍 检查项目文件...
+:: Check necessary files
+echo 🔍 Checking project files...
 if not exist "server.js" (
-    echo ❌ 找不到 server.js 文件！
-    echo 请确保在正确的项目目录中运行此脚本。
+    echo ❌ Cannot find server.js file!
+    echo Please make sure to run this script in the correct project directory.
     pause
     exit /b 1
 )
 
 if not exist "package.json" (
-    echo ❌ 找不到 package.json 文件！
-    echo 项目配置文件缺失。
+    echo ❌ Cannot find package.json file!
+    echo Project configuration file is missing.
     pause
     exit /b 1
 )
 
-echo ✅ 项目文件检查完成
+echo ✅ Project file check completed
 echo.
-echo 🚀 正在启动服务器...
+echo 🚀 Starting server...
 echo.
 
-:: 启动服务器
+:: Start server
 node server.js 3001
 
-:: 检查启动结果
+:: Check startup result
 if %errorlevel% neq 0 (
     echo.
-    echo ❌ 服务器启动失败！
+    echo ❌ Server startup failed!
     echo.
-    echo 可能的原因：
-    echo 1. 端口被占用（尝试关闭其他程序）
-    echo 2. Node.js 版本不兼容（需要 14.0.0 或更高版本）
-    echo 3. 项目文件损坏
+    echo Possible causes:
+    echo 1. Port is occupied (try closing other programs)
+    echo 2. Node.js version incompatible (requires 14.0.0 or higher)
+    echo 3. Project files corrupted
     echo.
-    echo 当前 Node.js 版本: %NODE_VERSION%
-    echo 要求版本: 14.0.0 或更高
+    echo Current Node.js version: %NODE_VERSION%
+    echo Required version: 14.0.0 or higher
     echo.
     pause
     exit /b 1
 )
 
 echo.
-echo ✅ 服务器已正常关闭
+echo ✅ Server closed normally
 pause
 

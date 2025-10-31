@@ -1,7 +1,7 @@
 {
   "name": "maze-art-installation",
   "version": "1.0.0",
-  "description": "无限递归生成迷宫艺术装置",
+  "description": "Infinite recursive maze generation art installation",
   "type": "module",
   "main": "server.js",
   "scripts": {

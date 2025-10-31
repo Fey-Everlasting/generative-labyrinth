@@ -30,7 +30,7 @@ export class LabyrinthRendererWebGL {
     initShader() {
         const gl = this.gl;
         
-        // 顶点着色器
+        // Vertex shader
         const vertexSource = `#version 300 es
             in vec2 position;
             in vec2 texCoord;
@@ -42,7 +42,7 @@ export class LabyrinthRendererWebGL {
             }
         `;
         
-        // 片段着色器 - 全新动态特效
+        // Fragment shader - brand new dynamic effects
         const fragmentSource = `#version 300 es
             precision highp float;
             
@@ -53,12 +53,12 @@ export class LabyrinthRendererWebGL {
             uniform float uTime;
             uniform vec2 uResolution;
             
-            // 简单噪声函数
+            // Simple noise function
             float noise(vec2 p) {
                 return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
             }
             
-            // 平滑噪声
+            // Smooth noise
             float smoothNoise(vec2 p) {
                 vec2 i = floor(p);
                 vec2 f = fract(p);
@@ -72,18 +72,18 @@ export class LabyrinthRendererWebGL {
                 return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
             }
             
-            // 波纹效果
+            // Ripple effect
             float ripple(vec2 uv, vec2 center, float time) {
                 float dist = length(uv - center);
                 return sin(dist * 15.0 - time * 3.0) * exp(-dist * 2.0) * 0.3;
             }
             
-            // 呼吸光晕 - 更柔和的效果
+            // Breathing glow - softer effect
             float breathingGlow(float time) {
                 return 0.9 + 0.1 * sin(time * 1.2);
             }
             
-            // 流动效果
+            // Flow effect
             vec2 flowDistortion(vec2 uv, float time) {
                 float flow = smoothNoise(uv * 3.0 + vec2(time * 0.5, 0.0)) * 0.02;
                 return uv + vec2(flow, flow * 0.5);
@@ -93,33 +93,33 @@ export class LabyrinthRendererWebGL {
                 vec2 uv = vTexCoord;
                 vec4 labyrinthColor = texture(uLabyrinthTexture, uv);
                 
-                // 更精细的TRAE风格背景效果
-                vec2 fineGridUV = uv * 120.0; // 更细的网格
+                // More refined TRAE-style background effect
+                vec2 fineGridUV = uv * 120.0; // Finer grid
                 vec2 fineGridID = floor(fineGridUV);
                 
-                // 静态的噪声效果，避免硬边界
+                // Static noise effect, avoiding hard boundaries
                 float fineNoise = smoothNoise(fineGridID * 0.1);
-                float subtlePattern = fineNoise * 0.01; // 非常微妙的静态效果
+                float subtlePattern = fineNoise * 0.01; // Very subtle static effect
                 
-                // 静态的微妙纹理效果
+                // Static subtle texture effect
                 float gentleFlow = sin(uv.x * 10.0) * sin(uv.y * 8.0) * 0.005;
                 
                 if (labyrinthColor.r > 0.3 && labyrinthColor.g < 0.3) {
-                    // 墙壁 - 适中的绿色，确保可见性
-                    vec3 baseColor = vec3(0.0, 0.5, 0.2); // 稍微提高亮度，确保墙壁可见
+                    // Walls - moderate green, ensuring visibility
+                    vec3 baseColor = vec3(0.0, 0.5, 0.2); // Slightly increase brightness to ensure walls are visible
                     
-                    // 径向呼吸光晕效果 - 从中心扩散
+                    // Radial breathing glow effect - spreading from center
                     vec2 center = vec2(0.5, 0.5);
                     float distFromCenter = length(uv - center);
                     
-                    // 呼吸效果 - 基于时间的脉冲
+                    // Breathing effect - time-based pulse
                     float breathPulse = 0.7 + 0.3 * sin(uTime * 1.5);
                     
-                    // 径向光晕 - 从中心向外扩散
+                    // Radial glow - spreading outward from center
                     float radialGlow = 1.0 - smoothstep(0.0, 0.8, distFromCenter);
                     radialGlow = pow(radialGlow, 2.0) * breathPulse;
                     
-                    // 边缘发光 - 柔和的绿色科技感
+                    // Edge glow - soft green tech feel
                     vec2 pixelSize = 1.0 / uResolution;
                     float edge = 0.0;
                     edge += abs(texture(uLabyrinthTexture, uv + vec2(-pixelSize.x, 0.0)).r - labyrinthColor.r);
@@ -129,49 +129,49 @@ export class LabyrinthRendererWebGL {
                     
                     vec3 edgeGlow = vec3(0.0, 0.6, 0.3) * smoothstep(0.0, 1.0, edge) * 0.3;
                     
-                    // 微妙的垂直渐变效果 - 非常轻微，不影响可见性
+                    // Subtle vertical gradient effect - very slight, doesn't affect visibility
                     float subtleVerticalGradient = 0.8 + 0.2 * (1.0 - uv.y * 0.3);
                     
-                    // 应用径向呼吸光晕效果和微妙的垂直渐变
+                    // Apply radial breathing glow effect and subtle vertical gradient
                     vec3 glowColor = vec3(0.0, 0.8, 0.4) * radialGlow * 0.4;
                     vec3 finalColor = (baseColor + glowColor + edgeGlow) * subtleVerticalGradient;
                     fragColor = vec4(finalColor, 1.0);
                     
                 } else if (labyrinthColor.g > 0.3 && labyrinthColor.r < 0.3) {
-                    // 探索者 - 稳定的亮绿色，不变色
-                    vec3 baseColor = vec3(0.2, 1.0, 0.6); // 稳定的亮绿色
+                    // Explorer - stable bright green, no color change
+                    vec3 baseColor = vec3(0.2, 1.0, 0.6); // Stable bright green
                     
-                    // 简单的亮度脉冲，不改变颜色
+                    // Simple brightness pulse, no color change
                     float pulse = 0.9 + 0.1 * sin(uTime * 3.0);
                     
-                    // 去掉复杂的旋转和径向效果，保持颜色稳定
+                    // Remove complex rotation and radial effects, keep color stable
                     vec3 finalColor = baseColor * pulse;
                     fragColor = vec4(finalColor, 1.0);
                     
                 } else if (labyrinthColor.b > 0.2 && labyrinthColor.r < 0.3 && labyrinthColor.g < 0.3) {
-                    // 访问痕迹 - 暗绿色痕迹
+                    // Access trace - dark green trace
                     vec3 traceColor = vec3(0.0, 0.3, 0.15);
                     float traceFade = 0.4 + 0.1 * sin(uTime * 1.5);
                     fragColor = vec4(traceColor * traceFade, 0.6);
                     
                 } else {
-                    // 背景 - 精细的TRAE风格深色背景
-                    vec3 baseColor = vec3(0.02, 0.05, 0.03); // 非常深的绿色调
+                    // Background - refined TRAE-style dark background
+                    vec3 baseColor = vec3(0.02, 0.05, 0.03); // Very deep green tone
                     
-                    // 精细的背景纹理效果
+                    // Refined background texture effect
                     float backgroundTexture = subtlePattern + gentleFlow;
                     
-                    // 径向渐变，中心稍亮
+                    // Radial gradient, slightly brighter at center
                     float radialGrad = 1.0 - length(uv - vec2(0.5)) * 0.3;
                     
-                    // 静态的色调变化
+                    // Static color shift
                     vec3 colorShift = vec3(
                         0.0,
                         0.002,
                         0.001
                     );
                     
-                    // 添加非常微妙的扫描线效果
+                    // Add very subtle scanline effect
                     float scanlines = sin(uv.y * 800.0) * 0.003;
                     
                     vec3 finalColor = (baseColor + colorShift + vec3(0.0, backgroundTexture, backgroundTexture * 0.5) + vec3(0.0, scanlines, scanlines * 0.5)) * radialGrad;

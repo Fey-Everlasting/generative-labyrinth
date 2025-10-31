@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.argv[2] || 3000;
 
-// 获取本机内网IP
+// Get local network IP
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
@@ -22,7 +22,7 @@ function getLocalIP() {
     return 'localhost';
 }
 
-// MIME类型映射
+// MIME type mapping
 const mimeTypes = {
     '.html': 'text/html',
     '.js': 'text/javascript',
@@ -38,7 +38,7 @@ const mimeTypes = {
 const server = http.createServer((req, res) => {
     console.log(`${req.method} ${req.url}`);
 
-    // 处理根路径
+    // Handle root path
     let filePath = '.' + req.url;
     if (filePath === './') {
         filePath = './index.html';
@@ -68,10 +68,10 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
     const localIP = getLocalIP();
-    console.log('\n🎨 迷宫艺术装置服务器已启动\n');
-    console.log(`本地访问: http://localhost:${PORT}`);
-    console.log(`内网访问: http://${localIP}:${PORT}`);
-    console.log(`\n📱 使用手机访问内网地址即可查看\n`);
-    console.log('按 Ctrl+C 停止服务器\n');
+    console.log('\n🎨 Labyrinth Art Installation Server Started\n');
+    console.log(`Local access: http://localhost:${PORT}`);
+    console.log(`Network access: http://${localIP}:${PORT}`);
+    console.log(`\n📱 Use mobile device to access network address\n`);
+    console.log('Press Ctrl+C to stop server\n');
 });
 

@@ -70,7 +70,7 @@ export class LabyrinthLogic {
         this.ART_PARAMS.tunnelPreference = this.mapRange(this.randHash(0, 0, 1), 0.4, 0.8);
         this.ART_PARAMS.sparsityPenalty = this.mapRange(this.randHash(0, 0, 2), 0.05, 0.2);
         
-        // 固定颜色
+        // Fixed color
         this.ART_PARAMS.wallHue = 210;
         this.ART_PARAMS.visitedAlpha = 0.2;
         this.ART_PARAMS.explorerHue = 15;
@@ -202,10 +202,10 @@ export class LabyrinthLogic {
             }
         }
         
-        // 更严格的短死路检测：如果只有1个或0个潜在出口，认为是短死路
+        // Stricter short dead-end detection: consider it a short dead-end if there are only 1 or 0 potential exits
         if (potentialExits <= 1) return true;
         
-        // 额外检查：如果周围2格范围内已有太多死路，也认为会创建细碎结构
+        // Additional check: if there are too many dead-ends within a 2-cell range, also consider it creating fragmented structure
         let nearbyDeadEnds = 0;
         for (let dy = -2; dy <= 2; dy++) {
             for (let dx = -2; dx <= 2; dx++) {
@@ -224,35 +224,35 @@ export class LabyrinthLogic {
             }
         }
         
-        return nearbyDeadEnds >= 2; // 如果附近已有2个或更多死路，避免创建新的
+        return nearbyDeadEnds >= 2; // If there are already 2 or more dead-ends nearby, avoid creating new ones
     }
     
-    // 计算到最近分叉点的距离，用于惩罚极短通道
+    // Calculate distance to nearest junction, used to penalize extremely short passages
     getDistanceToNearestJunction(startX, startY, excludeDir) {
         let minDistance = Infinity;
         
-        // 从当前位置向各个方向搜索，找到最近的分叉点
+        // Search from current position in all directions to find the nearest junction
         for (let searchDir = 0; searchDir < 4; searchDir++) {
-            if (searchDir === excludeDir) continue; // 排除即将要走的方向
+            if (searchDir === excludeDir) continue; // Exclude the direction about to be taken
             
             let distance = 0;
             let currentX = startX;
             let currentY = startY;
             let currentDir = searchDir;
             
-            // 沿着这个方向搜索，直到找到分叉点或死路
-            while (distance < 10) { // 限制搜索距离
+            // Search along this direction until finding a junction or dead-end
+            while (distance < 10) { // Limit search distance
                 const nextX = currentX + this.DIRECTIONS[currentDir].dx;
                 const nextY = currentY + this.DIRECTIONS[currentDir].dy;
                 
-                if (!this.isCellCarved(nextX, nextY)) break; // 遇到墙壁
-                if (!this.isEdgeOpenCached(currentX, currentY, currentDir)) break; // 路径不通
+                if (!this.isCellCarved(nextX, nextY)) break; // Hit a wall
+                if (!this.isEdgeOpenCached(currentX, currentY, currentDir)) break; // Path is blocked
                 
                 currentX = nextX;
                 currentY = nextY;
                 distance++;
                 
-                // 检查当前位置是否是分叉点（有超过2个开口）
+                // Check if current position is a junction (has more than 2 openings)
                 let openDirs = 0;
                 for (let k = 0; k < 4; k++) {
                     if (this.isEdgeOpenCached(currentX, currentY, k)) {
@@ -265,9 +265,9 @@ export class LabyrinthLogic {
                     break;
                 }
                 
-                // 如果是直线通道，继续沿着同一方向
+                // If it's a straight corridor, continue in the same direction
                 if (openDirs === 2) {
-                    // 找到下一个方向（不是来的方向）
+                    // Find the next direction (not the direction we came from)
                     let nextDir = -1;
                     for (let k = 0; k < 4; k++) {
                         if (k !== (currentDir + 2) % 4 && this.isEdgeOpenCached(currentX, currentY, k)) {
@@ -278,29 +278,29 @@ export class LabyrinthLogic {
                     if (nextDir === -1) break;
                     currentDir = nextDir;
                 } else {
-                    break; // 死路或其他情况
+                    break; // Dead-end or other situation
                 }
             }
         }
         
-        return minDistance === Infinity ? 10 : minDistance; // 如果没找到分叉点，返回较大值
+        return minDistance === Infinity ? 10 : minDistance; // If no junction found, return a larger value
     }
     
-    // 检测相邻死路的开口方向，防止形成M、E、W型结构
+    // Detect adjacent dead-ends pattern, prevent forming M, E, W-type structures
     detectAdjacentDeadEndPattern(nx, ny, fromX, fromY, proposedDir) {
-        // 检查相邻位置是否存在相同开口方向的死路
+        // Check if adjacent positions have dead-ends with the same opening direction
         const adjacentPositions = [
-            { x: nx - 1, y: ny }, // 左
-            { x: nx + 1, y: ny }, // 右
-            { x: nx, y: ny - 1 }, // 上
-            { x: nx, y: ny + 1 }  // 下
+            { x: nx - 1, y: ny }, // Left
+            { x: nx + 1, y: ny }, // Right
+            { x: nx, y: ny - 1 }, // Up
+            { x: nx, y: ny + 1 }  // Down
         ];
         
         for (const pos of adjacentPositions) {
             if (pos.x === fromX && pos.y === fromY) continue;
             if (!this.isCellCarved(pos.x, pos.y)) continue;
             
-            // 检查这个相邻位置是否是死路
+            // Check if this adjacent position is a dead-end
             let openDirs = [];
             for (let i = 0; i < 4; i++) {
                 if (this.isEdgeOpenCached(pos.x, pos.y, i)) {
@@ -308,21 +308,21 @@ export class LabyrinthLogic {
                 }
             }
             
-            // 如果是死路（只有一个开口）
+            // If it's a dead-end (only one opening)
             if (openDirs.length === 1) {
                 const existingDeadEndDir = openDirs[0];
-                // 如果新的死路开口方向与现有死路相同，返回惩罚
+                // If the new dead-end opening direction is the same as existing dead-end, return penalty
                 if (existingDeadEndDir === proposedDir) {
-                    return 0.01; // 重度惩罚
+                    return 0.01; // Heavy penalty
                 }
-                // 如果是相对方向（形成直线型死路），也给予惩罚
+                // If it's opposite direction (forming linear dead-ends), also give penalty
                 if (Math.abs(existingDeadEndDir - proposedDir) === 2) {
-                    return 0.05; // 中度惩罚
+                    return 0.05; // Medium penalty
                 }
             }
         }
         
-        return 1.0; // 无惩罚
+        return 1.0; // No penalty
     }
     
     generateLabyrinthStructure(startX, startY) {
@@ -402,19 +402,19 @@ export class LabyrinthLogic {
                         score *= 0.7;
                     }
                     
-                    // 额外惩罚：检查是否会创建极短的通道段
-                    // 如果当前位置到最近的分叉点距离太短，给予惩罚
+                    // Additional penalty: check if it would create extremely short passage segments
+                    // If the distance from current position to nearest junction is too short, give penalty
                     let distanceToJunction = this.getDistanceToNearestJunction(current.x, current.y, i);
                     if (distanceToJunction < 3) {
-                        score *= 0.4; // 对极短通道给予重度惩罚
+                        score *= 0.4; // Heavy penalty for extremely short passages
                     } else if (distanceToJunction < 5) {
-                        score *= 0.7; // 对较短通道给予中度惩罚
+                        score *= 0.7; // Medium penalty for shorter passages
                     }
                     
                     if (this.wouldCreateShortDeadEnd(nx, ny, current.x, current.y)) {
                         score *= 0.05;
                         
-                        // 检查相邻死路模式，防止形成M、E、W型结构
+                        // Check adjacent dead-end patterns to prevent forming M, E, W-type structures
                         const adjacentDeadEndPenalty = this.detectAdjacentDeadEndPattern(nx, ny, current.x, current.y, i);
                         score *= adjacentDeadEndPenalty;
                     }
@@ -543,19 +543,19 @@ export class LabyrinthLogic {
                 }
             }
             
-            // 强制扩展死路至少2-3个单元格
+            // Force extend dead-ends to at least 2-3 cells
             let currentX = x, currentY = y;
             let currentDir = bestDir;
             let extensionLength = 0;
-            const minExtensionLength = 2 + Math.floor(this.randHash(x, y, 888) * 2); // 2-3个单元格
+            const minExtensionLength = 2 + Math.floor(this.randHash(x, y, 888) * 2); // 2-3 cells
             
             for (let step = 0; step < minExtensionLength; step++) {
                 const nextX = currentX + this.DIRECTIONS[currentDir].dx;
                 const nextY = currentY + this.DIRECTIONS[currentDir].dy;
                 
-                if (this.isCellCarved(nextX, nextY)) break; // 如果已经雕刻，停止扩展
+                if (this.isCellCarved(nextX, nextY)) break; // If already carved, stop extension
                 
-                // 检查是否会创建过多连接
+                // Check if it would create too many connections
                 let carvedNeighbors = 0;
                 for (let k = 0; k < 4; k++) {
                     const checkX = nextX + this.DIRECTIONS[k].dx;
@@ -565,24 +565,24 @@ export class LabyrinthLogic {
                     }
                 }
                 
-                if (carvedNeighbors > 1) break; // 避免创建过多连接
+                if (carvedNeighbors > 1) break; // Avoid creating too many connections
                 
                 this.carveCell(nextX, nextY);
                 this.setEdgeState(currentX, currentY, currentDir, true);
                 extendedCount++;
                 extensionLength++;
                 
-                // 准备下一步：有70%概率继续直行，30%概率转向
+                // Prepare next step: 70% chance to continue straight, 30% chance to turn
                 const continueHash = this.randHash(nextX, nextY, 999 + step);
                 if (continueHash < 0.7) {
-                    // 继续直行
+                    // Continue straight
                     currentX = nextX;
                     currentY = nextY;
                 } else {
-                    // 尝试转向
+                    // Try to turn
                     const possibleTurns = [];
                     for (let k = 0; k < 4; k++) {
-                        if (k === currentDir || k === (currentDir + 2) % 4) continue; // 排除直行和回头
+                        if (k === currentDir || k === (currentDir + 2) % 4) continue; // Exclude straight and backward
                         const turnX = nextX + this.DIRECTIONS[k].dx;
                         const turnY = nextY + this.DIRECTIONS[k].dy;
                         if (!this.isCellCarved(turnX, turnY)) {
@@ -595,7 +595,7 @@ export class LabyrinthLogic {
                         currentX = nextX;
                         currentY = nextY;
                     } else {
-                        break; // 无法转向，结束扩展
+                        break; // Cannot turn, end extension
                     }
                 }
             }
