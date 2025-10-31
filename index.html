@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation Node: Infinite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* Poppins Font Classes */
+        .poppins-thin { font-family: "Poppins", sans-serif; font-weight: 100; font-style: normal; }
+        .poppins-extralight { font-family: "Poppins", sans-serif; font-weight: 200; font-style: normal; }
+        .poppins-light { font-family: "Poppins", sans-serif; font-weight: 300; font-style: normal; }
+        .poppins-regular { font-family: "Poppins", sans-serif; font-weight: 400; font-style: normal; }
+        .poppins-medium { font-family: "Poppins", sans-serif; font-weight: 500; font-style: normal; }
+        .poppins-semibold { font-family: "Poppins", sans-serif; font-weight: 600; font-style: normal; }
+        .poppins-bold { font-family: "Poppins", sans-serif; font-weight: 700; font-style: normal; }
+        .poppins-extrabold { font-family: "Poppins", sans-serif; font-weight: 800; font-style: normal; }
+        .poppins-black { font-family: "Poppins", sans-serif; font-weight: 900; font-style: normal; }
+        .poppins-thin-italic { font-family: "Poppins", sans-serif; font-weight: 100; font-style: italic; }
+        .poppins-extralight-italic { font-family: "Poppins", sans-serif; font-weight: 200; font-style: italic; }
+        .poppins-light-italic { font-family: "Poppins", sans-serif; font-weight: 300; font-style: italic; }
+        .poppins-regular-italic { font-family: "Poppins", sans-serif; font-weight: 400; font-style: italic; }
+        .poppins-medium-italic { font-family: "Poppins", sans-serif; font-weight: 500; font-style: italic; }
+        .poppins-semibold-italic { font-family: "Poppins", sans-serif; font-weight: 600; font-style: italic; }
+        .poppins-bold-italic { font-family: "Poppins", sans-serif; font-weight: 700; font-style: italic; }
+        .poppins-extrabold-italic { font-family: "Poppins", sans-serif; font-weight: 800; font-style: italic; }
+        .poppins-black-italic { font-family: "Poppins", sans-serif; font-weight: 900; font-style: italic; }
+        
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0a0a0f;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #app-container { width: 100%; height: 100%; position: relative; }
+        #labyrinthCanvas { display: block; width: 100%; height: 100%; }
+        
+        /* 平面艺术风格的描述文本排版 */
+        #description-overlay {
+            position: fixed;
+            top: 6vh;
+            left: 4vw;
+            max-width: 380px;
+            width: auto;
+            padding: 0;
+            background: none;
+            backdrop-filter: none;
+            border-radius: 0;
+            color: #f0f0f0;
+            text-align: left;
+            z-index: 100;
+            box-shadow: none;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            opacity: 1;
+            transition: opacity 0.8s ease-out;
+            transform: none;
+            pointer-events: none;
+        }
+        
+        #description-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #description-overlay h1 {
+            font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+            font-weight: 300;
+            margin-bottom: 2vh;
+            letter-spacing: 0.12em;
+            color: #ffffff;
+            line-height: 1.1;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.3),
+                0 0 40px rgba(255, 255, 255, 0.1),
+                2px 2px 8px rgba(0, 0, 0, 0.8);
+            text-transform: uppercase;
+        }
+        
+        #description-overlay p {
+            font-size: clamp(0.85rem, 2.2vw, 1.05rem);
+            line-height: 1.45;
+            font-weight: 300;
+            margin-bottom: 2.5vh;
+            color: #e8e8e8;
+            max-width: 380px;
+            text-shadow: 
+                1px 1px 3px rgba(0, 0, 0, 0.7),
+                0 0 15px rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.02em;
+        }
+        
+        #description-overlay .continue-hint {
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            opacity: 0.7;
+            margin-top: 2.5vh;
+            font-weight: 300;
+            color: #b8b8b8;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        
+        /* 底部Credits文本 */
+        #credits-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 4vw;
+            right: auto;
+            width: auto;
+            max-width: 300px;
+            padding: 2vh 0;
+            padding-bottom: calc(5vh + env(safe-area-inset-bottom));
+            background: transparent;
+            color: #a0a0a0;
+            font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+            font-weight: 300;
+            text-align: left;
+            z-index: 50;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.4;
+            letter-spacing: 0.02em;
+        }
+        
+        #credits-overlay p {
+            margin: 0.3vh 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+        }
+        
+        #credits-overlay strong {
+            color: #c0c0c0;
+            font-weight: 400;
+        }
+        
+        /* 移动端平面艺术排版 - 左上角布局 */
+        @media (max-width: 768px) {
+            #description-overlay {
+                top: 4vh;
+                bottom: auto;
+                left: 4vw;
+                right: 4vw;
+                max-width: 85vw;
+                width: auto;
+            }
+            
+            #description-overlay h1 {
+                font-size: clamp(1.4rem, 6.5vw, 2.2rem);
+                font-weight: 400;
+                margin-bottom: 1.5vh;
+                letter-spacing: 0.08em;
+                line-height: 1.15;
+            }
+            
+            #description-overlay p {
+                font-size: clamp(0.7rem, 3vw, 0.85rem);
+                line-height: 1.35;
+                margin-bottom: 0.8vh;
+                max-width: none;
+            }
+            
+            #description-overlay .continue-hint {
+                margin-top: 1.8vh;
+                font-size: clamp(0.6rem, 2.5vw, 0.7rem);
+            }
+        }
+        
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
+            #description-overlay {
+                bottom: 6vh;
+                left: 4vw;
+                right: 4vw;
+            }
+            
+            #description-overlay h1 {
+                font-size: clamp(1.5rem, 9vw, 2.2rem);
+                letter-spacing: 0.1em;
+            }
+        }
+        
+        #info-overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 15px 20px;
+            background-color: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 13px;
+            z-index: 10;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        #info-overlay p { margin: 6px 0; line-height: 1.6; }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #e0e0e0;
+            font-size: 16px;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <canvas id="labyrinthCanvas"></canvas>
+    
+    <!-- Artistic Description Overlay -->
+    <div id="description-overlay">
+        <h1 class="poppins-light">THE INFINITE STRUCTURE</h1>
+        <p class="poppins-regular">It is not a labyrinth to escape, nor a path to follow.</p>
+        <p class="poppins-regular">It builds itself, endlessly, from within.</p>
+        <p class="poppins-regular">Every wall is consistent, but the whole is undefined.</p>
+        <p class="poppins-regular">You may move forward, yet never approach a center.</p>
+        <p class="poppins-regular">Infinity is not an open field — it is a room that folds upon awareness itself.</p>
+    </div>
+    
+    <!-- Credits Overlay -->
+    <div id="credits-overlay">
+        <p><strong>Sound</strong>: AI composition (AIMusicGen.AI)</p>
+        <p><strong>Typeface</strong>: Poppins (Google Fonts)</p>
+    </div>
+    
+    <!-- Ambient Music -->
+    <audio id="ambientMusic" preload="auto">
+        <source src="d6a09a35-81d1-4986-9737-00974566b557.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Debug panel hidden -->
+    <!-- <div id="info-overlay">
+        <p>Observer: <span id="explorerPos">0, 0</span></p>
+        <p style="opacity: 0.7">Seed: <span id="seedDisplay">...</span></p>
+        <p style="opacity: 0.5; font-size: 11px">∞ Recursive Generation | WebGL</p>
+    </div> -->
+</div>
+
+<script type="module">
+    import { LabyrinthLogic } from './js/labyrinth-logic.js';
+    import { LabyrinthRendererWebGL } from './js/labyrinth-renderer-webgl.js';
+
+    const canvas = document.getElementById('labyrinthCanvas');
+    const descriptionOverlay = document.getElementById('description-overlay');
+    const ambientMusic = document.getElementById('ambientMusic');
+    
+    // Initialize
+    const SEED = Math.floor(Math.random() * 1000000);
+    // console.log(`🎲 Seed: ${SEED}`);
+    // document.getElementById('seedDisplay').textContent = SEED; // Debug panel hidden
+    
+    // console.log('🚀 Starting initialization...');
+    
+    let labyrinth, renderer;
+    let isInitialized = false;
+    let lastTime = 0;
+    let hasStarted = false;
+    let musicPlaying = false;
+    let userInteracted = false;
+    
+    // Function to start music with improved error handling
+    function startMusic() {
+        if (!musicPlaying && ambientMusic) {
+            ambientMusic.volume = 0.3;
+            ambientMusic.play().then(() => {
+                musicPlaying = true;
+                console.log('🎵 Music started successfully');
+            }).catch(e => {
+                // Handle autoplay restrictions gracefully
+                if (e.name === 'NotAllowedError') {
+                    console.log('🔇 Autoplay blocked - waiting for user interaction');
+                    // Don't show error to user, this is expected behavior
+                } else {
+                    console.log('Audio play failed:', e.message);
+                }
+            });
+        }
+    }
+    
+    // Add event listener for when music ends
+    ambientMusic.addEventListener('ended', () => {
+        console.log('🎵 Music playback completed');
+        musicPlaying = false;
+    });
+    
+    // Prevent music from being paused accidentally
+    ambientMusic.addEventListener('pause', (e) => {
+        // Only allow pause if music has ended naturally
+        if (!ambientMusic.ended && musicPlaying) {
+            console.log('🎵 Preventing accidental pause - resuming music');
+            ambientMusic.play().catch(e => {
+                console.log('Failed to resume music:', e.message);
+            });
+        }
+    });
+    
+    // Handle audio loading errors
+    ambientMusic.addEventListener('error', (e) => {
+        console.log('Audio loading error:', e);
+        musicPlaying = false;
+    });
+    
+    // Enhanced user interaction detection
+    function handleUserInteraction() {
+        if (!userInteracted) {
+            userInteracted = true;
+            console.log('👆 User interaction detected');
+            
+            // Try to start music on first interaction
+            if (!musicPlaying) {
+                startMusic();
+            }
+        }
+    }
+    
+    // Add comprehensive interaction listeners
+    ['click', 'touchstart', 'keydown', 'mousedown'].forEach(eventType => {
+        document.addEventListener(eventType, handleUserInteraction, { once: false, passive: true });
+    });
+    
+    // Auto-start music after delay (will fail gracefully if autoplay is blocked)
+    setTimeout(() => {
+        if (!hasStarted) {
+            hasStarted = true;
+            startMusic();
+        }
+    }, 1500);
+    
+    try {
+        // Create labyrinth logic
+        labyrinth = new LabyrinthLogic(SEED);
+        
+        // Setup canvas dimensions with improved size detection
+        function resize() {
+            const container = document.getElementById('app-container');
+            
+            // Use multiple methods to ensure accurate dimensions
+            let width = container.clientWidth || window.innerWidth;
+            let height = container.clientHeight || window.innerHeight;
+            
+            // Fallback to viewport dimensions if container dimensions are invalid
+            if (width <= 0) width = window.innerWidth;
+            if (height <= 0) height = window.innerHeight;
+            
+            // Ensure minimum dimensions to prevent zero-size canvas
+            width = Math.max(width, 320);
+            height = Math.max(height, 240);
+            
+            if (renderer) {
+                renderer.resize(width, height);
+            } else {
+                canvas.width = width;
+                canvas.height = height;
+            }
+            
+            // console.log('Canvas resized to:', width, 'x', height);
+        }
+        
+        // Initial resize with delay to ensure DOM is fully rendered
+        function initializeCanvas() {
+            resize();
+            window.addEventListener('resize', resize);
+            
+            // Create WebGL renderer after ensuring proper canvas dimensions
+            renderer = new LabyrinthRendererWebGL(canvas, labyrinth);
+            
+            // Generate initial labyrinth structure
+            labyrinth.generateLabyrinthStructure(0, 0);
+            
+            isInitialized = true;
+            // console.log('✅ Initialization complete, starting experience loop');
+        }
+        
+        // Use requestAnimationFrame to ensure DOM is fully rendered before initialization
+        requestAnimationFrame(() => {
+            setTimeout(initializeCanvas, 50); // Additional small delay for CSS application
+        });
+        
+        // Experience loop
+        function experienceLoop(timestamp) {
+            if (!isInitialized || !renderer) {
+                requestAnimationFrame(experienceLoop);
+                return;
+            }
+            
+            if (lastTime === 0) {
+                lastTime = timestamp;
+            }
+            
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            
+            // Update logic
+            labyrinth.update(deltaTime);
+            
+            // Render
+            renderer.render(deltaTime);
+            
+            // Update UI - Observer fixed at (0,0) - Debug panel hidden
+            // document.getElementById('explorerPos').textContent = '0, 0';
+            
+            requestAnimationFrame(experienceLoop);
+        }
+        
+        requestAnimationFrame(experienceLoop);
+        
+    } catch (error) {
+        console.error('❌ Initialization failed:', error);
+        document.body.innerHTML = `
+            <div style="color: white; text-align: center; padding: 20px;">
+                <h2>Initialization Failed</h2>
+                <p>${error.message}</p>
+                <p>Please ensure your browser supports WebGL 2.0</p>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
+

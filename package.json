@@ -1,0 +1,17 @@
+{
+  "name": "maze-art-installation",
+  "version": "1.0.0",
+  "description": "无限递归生成迷宫艺术装置",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js 3000"
+  },
+  "keywords": ["maze", "art", "installation", "webgl"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
