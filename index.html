@@ -236,7 +236,7 @@
     
     <!-- Ambient Music -->
     <audio id="ambientMusic" preload="auto">
-        <source src="d6a09a35-81d1-4986-9737-00974566b557.mp3" type="audio/mpeg">
+        <source src="https://cdn1.aimusicgen.ai/7/audios/d6a09a35-81d1-4986-9737-00974566b557.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
     
@@ -269,10 +269,12 @@
     let hasStarted = false;
     let musicPlaying = false;
     let userInteracted = false;
+    let audioHasEnded = false; // 专门跟踪音频是否已结束
+    let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     // Function to start music with improved error handling
     function startMusic() {
-        if (!musicPlaying && ambientMusic) {
+        if (!musicPlaying && ambientMusic && !ambientMusic.ended && !audioHasEnded) {
             ambientMusic.volume = 0.3;
             ambientMusic.play().then(() => {
                 musicPlaying = true;
@@ -293,17 +295,54 @@
     ambientMusic.addEventListener('ended', () => {
         console.log('🎵 Music playback completed');
         musicPlaying = false;
-    });
-    
-    // Prevent music from being paused accidentally
-    ambientMusic.addEventListener('pause', (e) => {
-        // Only allow pause if music has ended naturally
-        if (!ambientMusic.ended && musicPlaying) {
-            console.log('🎵 Preventing accidental pause - resuming music');
-            ambientMusic.play().catch(e => {
-                console.log('Failed to resume music:', e.message);
-            });
+        audioHasEnded = true;
+        
+        // 移动设备额外保护：移除所有可能重新触发播放的事件监听器
+        if (isMobile) {
+            console.log('📱 Mobile device: Disabling further audio interactions');
+            // 标记用户交互已完成，防止再次触发
+            userInteracted = true;
         }
+    });
+
+    // Add debugging for audio events
+    ambientMusic.addEventListener('loadedmetadata', () => {
+        console.log('🎵 Audio metadata loaded, duration:', ambientMusic.duration, 'seconds');
+    });
+
+    // Log every 10 seconds instead of every timeupdate
+    let lastLoggedTime = 0;
+    ambientMusic.addEventListener('timeupdate', () => {
+        const currentSeconds = Math.floor(ambientMusic.currentTime);
+        if (currentSeconds > 0 && currentSeconds % 10 === 0 && currentSeconds !== lastLoggedTime) {
+            console.log('🎵 Audio time:', currentSeconds, 'seconds');
+            lastLoggedTime = currentSeconds;
+        }
+        
+        // 移动设备专用：检测音频是否接近结束
+        if (isMobile && ambientMusic.duration > 0) {
+            const remainingTime = ambientMusic.duration - ambientMusic.currentTime;
+            if (remainingTime < 1 && !audioHasEnded) {
+                console.log('📱 Mobile: Audio ending soon, preparing to prevent restart');
+                audioHasEnded = true;
+                userInteracted = true; // 防止任何进一步的交互触发播放
+            }
+        }
+    });
+
+    ambientMusic.addEventListener('play', () => {
+        console.log('🎵 Audio play event triggered at time:', ambientMusic.currentTime);
+        
+        // 移动设备额外检查：如果音频已标记为结束，立即暂停
+        if (audioHasEnded && isMobile) {
+            console.log('🚫 Mobile: Preventing audio restart after end');
+            ambientMusic.pause();
+            return;
+        }
+    });
+
+    ambientMusic.addEventListener('pause', () => {
+        console.log('🎵 Audio pause event triggered at time:', ambientMusic.currentTime);
     });
     
     // Handle audio loading errors
@@ -314,14 +353,17 @@
     
     // Enhanced user interaction detection
     function handleUserInteraction() {
-        if (!userInteracted) {
+        if (!userInteracted && !ambientMusic.ended && !audioHasEnded) {
             userInteracted = true;
             console.log('👆 User interaction detected');
             
-            // Try to start music on first interaction
-            if (!musicPlaying) {
+            // Try to start music on first interaction (only if not ended)
+            if (!musicPlaying && !ambientMusic.ended && !audioHasEnded) {
                 startMusic();
             }
+        } else if (audioHasEnded || ambientMusic.ended) {
+            // 如果音频已结束，记录但不执行任何操作
+            console.log('🚫 Audio has ended, ignoring user interaction');
         }
     }
     
@@ -332,7 +374,7 @@
     
     // Auto-start music after delay (will fail gracefully if autoplay is blocked)
     setTimeout(() => {
-        if (!hasStarted) {
+        if (!hasStarted && !ambientMusic.ended && !audioHasEnded) {
             hasStarted = true;
             startMusic();
         }
